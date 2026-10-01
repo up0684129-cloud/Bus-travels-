@@ -1,0 +1,8 @@
+{
+  "name": "ApexWay Express - Long-Distance Tourist Coach",
+  "description": "Book luxury long-distance tourist bus journeys with live GPS vehicle tracking, interactive maps, mobile payments, seat alerts, loyalty club, and rider-driver messaging.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ApexWay Express - Long-Distance Tourist Coach</title>
+  <meta name="description" content="Book luxury long-distance tourist bus journeys with live GPS vehicle tracking, interactive maps, mobile payments, seat alerts, loyalty club, and rider-driver messaging." />
+  
+  <!-- OpenGraph Social Tags -->
+  <meta property="og:title" content="ApexWay Express - Long-Distance Tourist Coach" />
+  <meta property="og:description" content="Book luxury long-distance tourist bus journeys with live GPS vehicle tracking, interactive maps, mobile payments, seat alerts, loyalty club, and rider-driver messaging." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet Map CSS for Real-Time Interactive Fleet Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- ============================================================ -->
+  <!-- 1. NAVIGATION HEADER                                         -->
+  <!-- ============================================================ -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <!-- Brand Logo -->
+      <a href="#" class="brand-logo" aria-label="ApexWay Express Home">
+        <div class="logo-badge">
+          <span>🚌</span>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">ApexWay<span>Express</span></div>
+          <div class="brand-sub">Scenic Tourist Coach</div>
+        </div>
+      </a>
+
+      <!-- Primary Nav Links -->
+      <nav>
+        <ul class="nav-links" id="main-nav-links">
+          <li><a href="#trips" class="nav-link active">Explore Trips</a></li>
+          <li><a href="#live-tracker" class="nav-link">Live GPS Fleet</a></li>
+          <li><a href="#loyalty" class="nav-link">Loyalty Club</a></li>
+          <li><a href="#reviews" class="nav-link">Rider Reviews</a></li>
+          <li><a href="#my-bookings" class="nav-link">My Bookings</a></li>
+        </ul>
+      </nav>
+
+      <!-- Action Cluster -->
+      <div class="nav-actions">
+        <!-- Live Notifications Bell -->
+        <button id="notif-bell-btn" class="icon-btn" onclick="window.toggleNotificationPopover()" title="Live Alerts & Updates" aria-label="View notifications">
+          <span>🔔</span>
+          <span id="notif-badge-counter" class="badge-counter">2</span>
+        </button>
+
+        <!-- Currency Selector -->
+        <select id="currency-selector" class="currency-select" aria-label="Select Currency">
+          <option value="USD">$ USD</option>
+          <option value="EUR">€ EUR</option>
+          <option value="GBP">£ GBP</option>
+        </select>
+
+        <!-- Dark / Light Mode Switcher -->
+        <button id="theme-toggle-btn" class="icon-btn" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+
+        <!-- Mobile Menu Toggle -->
+        <button id="mobile-menu-btn" class="icon-btn mobile-menu-btn" aria-label="Toggle Menu">
+          <span>☰</span>
+        </button>
+
+        <!-- Quick Book CTA Button -->
+        <a href="#trips" class="btn-primary" style="display:none; @media(min-width:768px){display:inline-flex;}">
+          Book Journey
+        </a>
+      </div>
+    </div>
+
+    <!-- Automated Notification Popover Dropdown -->
+    <div id="notification-popover" class="notification-popover">
+      <div class="notif-header">
+        <div style="font-weight:700; font-size:0.9375rem; display:flex; align-items:center; gap:0.4rem;">
+          <span>🔔</span> Live Fleet & Delay Alerts
+        </div>
+        <button onclick="window.markAllNotificationsRead()" style="font-size:0.75rem; color:var(--primary); font-weight:600;">
+          Mark all read
+        </button>
+      </div>
+      <div id="notification-items-list" class="notif-list">
+        <!-- Rendered by script.js -->
+      </div>
+      <div style="padding:0.75rem 1.25rem; background:var(--bg-card-subtle); border-top:1px solid var(--border-light); font-size:0.75rem; color:var(--text-muted); text-align:center;">
+        ⚡ Instant updates powered by ApexWay Satellite Telemetry
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- 2. HERO & TRIP SEARCH SECTION                                -->
+  <!-- ============================================================ -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="pulse-dot"></span>
+          <span>Next-Gen Long-Distance Tourist Coaches with Live GPS Tracking</span>
+        </div>
+
+        <h1 class="hero-title">
+          Spectacular Horizons. <br />
+          <span class="gradient-text">Zero Driving Fatigue.</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Experience North America’s most breathtaking scenic corridors aboard ultra-luxury coaches.
+          Featuring 360° panoramic glass roofs, high-speed Starlink 5G, instant mobile checkout, and live satellite tracking.
+        </p>
+
+        <!-- Search Engine Box -->
+        <div class="search-card">
+          <div class="search-trip-type">
+            <button class="tab-pill active" type="button">🏔️ Scenic National Parks</button>
+            <button class="tab-pill" type="button">🌊 Coastal Byways</button>
+            <button class="tab-pill" type="button">🍷 Wine Country Express</button>
+          </div>
+
+          <form id="trip-search-form" class="search-form-grid">
+            <!-- Departure -->
+            <div class="input-group">
+              <label for="search-origin" class="input-label">
+                <span>📍 Departure City</span>
+              </label>
+              <select id="search-origin" class="input-control">
+                <option value="">All Departure Hubs</option>
+                <option value="San Francisco">San Francisco (Transbay)</option>
+                <option value="Las Vegas">Las Vegas (Strip Terminal)</option>
+                <option value="Denver">Denver (Union Station)</option>
+                <option value="Los Angeles">Los Angeles (Union Plaza)</option>
+                <option value="Seattle">Seattle (King St Concourse)</option>
+              </select>
+            </div>
+
+            <!-- Destination -->
+            <div class="input-group">
+              <label for="search-destination" class="input-label">
+                <span>🎯 Destination Wonder</span>
+              </label>
+              <select id="search-destination" class="input-control">
+                <option value="">All Scenic Destinations</option>
+                <option value="Los Angeles">Los Angeles via Big Sur (AW-101)</option>
+                <option value="Grand Canyon">Grand Canyon South Rim (AW-204)</option>
+                <option value="Yosemite Valley">Yosemite Valley High Country (AW-308)</option>
+                <option value="Aspen">Rocky Mountain Aspen / Vail (AW-415)</option>
+              </select>
+            </div>
+
+            <!-- Date -->
+            <div class="input-group">
+              <label for="search-date" class="input-label">
+                <span>📅 Travel Date</span>
+              </label>
+              <input type="date" id="search-date" class="input-control" value="2026-10-02" />
+            </div>
+
+            <!-- Cabin Class & Guests -->
+            <div class="input-group">
+              <label for="search-cabin-class" class="input-label">
+                <span>💺 Cabin & Guests</span>
+              </label>
+              <select id="search-cabin-class" class="input-control">
+                <option value="panoramic">1 Traveler • Panoramic Upper Deck</option>
+                <option value="standard">2 Travelers • Standard Tourist</option>
+                <option value="vip">VIP Sleeper Pod Suite</option>
+              </select>
+            </div>
+
+            <!-- Submit Search Button -->
+            <div>
+              <button type="submit" class="btn-primary btn-lg" style="width:100%; height:50px;">
+                <span>Search Trips</span>
+                <span>➔</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Search Feature Highlights -->
+          <div class="search-features-bar">
+            <div class="feature-chips">
+              <span class="feature-chip">✅ Free Cancellation up to 24h</span>
+              <span class="feature-chip">📱 Apple Pay & Google Pay</span>
+              <span class="feature-chip">📡 Live GPS Vehicle Tracking</span>
+              <span class="feature-chip">☕ Complimentary Artisan Refreshments</span>
+            </div>
+            <div style="font-weight:600; color:var(--success);">
+              ● 5 Coaches En Route Now
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 3. REAL-TIME FLEET TRACKING & INTERACTIVE MAP                -->
+  <!-- ============================================================ -->
+  <section id="live-tracker" class="section tracker-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">📡 Real-Time Telemetry</span>
+        <h2 class="section-title">Live GPS Fleet Tracking Map</h2>
+        <p class="section-desc">
+          Follow every coach in real-time along scenic highways. Check live highway speeds, scheduled photo-stop overlooks, next ETA, and message active chauffeurs directly.
+        </p>
+      </div>
+
+      <div class="fleet-dashboard">
+        <!-- Map Controls & Filter Header -->
+        <div class="fleet-dashboard-header">
+          <div class="fleet-status-meta">
+            <span class="live-indicator">
+              <span class="pulse-ring"></span>
+              Live GPS Simulation Active
+            </span>
+            <span class="telemetry-tag">Refresh: 3.5s • Satellite: Galileo/GPS Synced</span>
+          </div>
+
+          <!-- Route Filter Pills -->
+          <div class="route-filter-bar">
+            <button class="filter-btn active" data-route="all">All Active Routes (4)</button>
+            <button class="filter-btn" data-route="AW-101">AW-101 (Pacific Coast)</button>
+            <button class="filter-btn" data-route="AW-204">AW-204 (Grand Canyon)</button>
+            <button class="filter-btn" data-route="AW-308">AW-308 (Yosemite)</button>
+            <button class="filter-btn" data-route="AW-415">AW-415 (Rocky Mountains)</button>
+          </div>
+        </div>
+
+        <!-- Leaflet Map Container -->
+        <div class="map-viewport-wrapper">
+          <div id="fleet-map"></div>
+
+          <!-- Floating Map Legend Overlay -->
+          <div class="map-floating-overlay">
+            <div class="map-floating-title">
+              <span>Scenic Fleet Corridors</span>
+              <span style="font-size:0.7rem; color:var(--text-muted);">Interactive</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background:#0284c7;"></span>
+              <span>AW-101: Pacific Coast Hwy (Big Sur)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background:#f59e0b;"></span>
+              <span>AW-204: Red Rocks & Grand Canyon</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background:#10b981;"></span>
+              <span>AW-308: Sierra Nevada & Yosemite</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background:#8b5cf6;"></span>
+              <span>AW-415: Rocky Mtn Alpine Sleeper</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Cards Grid Below Map -->
+        <div id="telemetry-cards-grid" class="telemetry-cards-grid">
+          <!-- Populated dynamically via script.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 4. AVAILABLE SCENIC TRIPS & BOOKING LISTINGS                 -->
+  <!-- ============================================================ -->
+  <section id="trips" class="section trips-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🎟️ Guaranteed Scenic Departures</span>
+        <h2 class="section-title">Handcrafted Long-Distance Coach Journeys</h2>
+        <p class="section-desc">
+          Engineered exclusively for sightseers. Relax in ergonomic memory foam reclining chairs, enjoy complimentary artisan snacks, and capture panoramic views through glass skylights.
+        </p>
+      </div>
+
+      <!-- Controls & Count Bar -->
+      <div class="trips-controls-bar">
+        <div id="trip-results-count" class="results-count">
+          Showing <strong>4 luxury coach journeys</strong> available today
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <label for="trip-sort-select" style="font-size:0.875rem; font-weight:600; color:var(--text-muted);">Sort by:</label>
+          <select id="trip-sort-select" class="sort-select">
+            <option value="featured">Featured Scenic Corridors</option>
+            <option value="price-asc">Lowest Price</option>
+            <option value="time-asc">Earliest Departure</option>
+            <option value="rating-desc">Highest Traveler Rating</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Trips Cards Grid -->
+      <div id="trips-grid" class="trips-grid">
+        <!-- Rendered by script.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 5. USER LOYALTY PROGRAM (APEXMILES CLUB)                     -->
+  <!-- ============================================================ -->
+  <section id="loyalty" class="section loyalty-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🌟 Frequent Traveler Club</span>
+        <h2 class="section-title">ApexMiles Loyalty Rewards</h2>
+        <p class="section-desc">
+          Earn 10 ApexMiles for every dollar spent on tourist coach travel. Redeem your miles for complimentary panoramic upgrades, gourmet hampers, and instant checkout discounts.
+        </p>
+      </div>
+
+      <!-- Member Loyalty Dashboard Card -->
+      <div class="loyalty-card-wrapper">
+        <div class="loyalty-top-bar">
+          <div>
+            <span class="member-tier-badge">
+              <span>👑</span> <span id="loyalty-tier-name">Gold Voyager</span>
+            </span>
+            <div style="margin-top:0.75rem; font-size:0.875rem; color:#94a3b8;">
+              Active Member: <strong>Alex Mercer</strong> • Member ID: #APX-48201
+            </div>
+          </div>
+
+          <div class="points-counter-display">
+            <span id="loyalty-points-val" class="points-num">1,450</span>
+            <span class="points-lbl">ApexMiles</span>
+          </div>
+        </div>
+
+        <!-- Tier Progress Meter -->
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:0.875rem; font-weight:600;">
+            <span>Progress to Platinum Elite Tier</span>
+            <span>1,550 pts to Platinum (15% lifetime discount)</span>
+          </div>
+          <div class="tier-progress-track">
+            <div id="loyalty-progress-fill" class="tier-progress-bar"></div>
+          </div>
+          <div class="tier-milestones">
+            <span>Silver (0 pts)</span>
+            <strong>Current: Gold (1,000 pts)</strong>
+            <span>Platinum Elite (3,000 pts)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Redeemable Perks & Vouchers Grid -->
+      <div class="loyalty-perks-grid">
+        <div class="perk-card">
+          <div class="perk-icon-wrap">🎟️</div>
+          <div>
+            <h3 class="perk-title">$10 Scenic Coach Voucher</h3>
+            <p class="perk-desc">Apply instantly to any long-distance reservation at checkout.</p>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="perk-points-cost">500 ApexMiles</span>
+            <button class="btn-primary btn-sm" onclick="window.redeemPerk(500, 'APEX10', '$10 Coach Discount')">
+              Redeem Now
+            </button>
+          </div>
+        </div>
+
+        <div class="perk-card">
+          <div class="perk-icon-wrap">🌟</div>
+          <div>
+            <h3 class="perk-title">$25 Gold Voyager Credit</h3>
+            <p class="perk-desc">Exclusive credit for journeys over 5 hours in duration.</p>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="perk-points-cost">1,200 ApexMiles</span>
+            <button class="btn-primary btn-sm" onclick="window.redeemPerk(1200, 'GOLDMEMBER25', '$25 Voyager Credit')">
+              Redeem Now
+            </button>
+          </div>
+        </div>
+
+        <div class="perk-card">
+          <div class="perk-icon-wrap">🍱</div>
+          <div>
+            <h3 class="perk-title">Artisan Scenic Picnic Box</h3>
+            <p class="perk-desc">Locally sourced artisan cheese, gourmet crisps, and sparkling cider.</p>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="perk-points-cost">400 ApexMiles</span>
+            <button class="btn-primary btn-sm" onclick="window.redeemPerk(400, 'PICNICFREE', 'Free Artisan Hamper')">
+              Redeem Now
+            </button>
+          </div>
+        </div>
+
+        <div class="perk-card">
+          <div class="perk-icon-wrap">🪟</div>
+          <div>
+            <h3 class="perk-title">Panoramic Front Row Upgrade</h3>
+            <p class="perk-desc">Guaranteed Front Row Upper Deck seating with unobstructed glass vistas.</p>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="perk-points-cost">750 ApexMiles</span>
+            <button class="btn-primary btn-sm" onclick="window.redeemPerk(750, 'PANORAMAUP', 'Panoramic Seat Upgrade')">
+              Redeem Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 6. RIDER REVIEW & RATING SYSTEM                              -->
+  <!-- ============================================================ -->
+  <section id="reviews" class="section reviews-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">⭐ Verified Travelers</span>
+        <h2 class="section-title">Rider Reviews & Experiences</h2>
+        <p class="section-desc">
+          Read genuine feedback from international explorers who toured scenic wonders aboard our long-distance fleet.
+        </p>
+      </div>
+
+      <!-- Rating Aggregate Summary Card -->
+      <div class="reviews-summary-card">
+        <div class="rating-big-score">
+          <div class="big-number">4.9</div>
+          <div class="stars-row">★★★★★</div>
+          <div style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">
+            Based on 4,820+ verified scenic riders
+          </div>
+        </div>
+
+        <div class="rating-bars-col">
+          <div class="rating-meter-item">
+            <span>Scenic Views & Stops</span>
+            <div class="meter-track"><div class="meter-fill" style="width:100%;"></div></div>
+            <strong style="text-align:right;">5.0</strong>
+          </div>
+          <div class="rating-meter-item">
+            <span>Coach Comfort & Cleanliness</span>
+            <div class="meter-track"><div class="meter-fill" style="width:98%;"></div></div>
+            <strong style="text-align:right;">4.9</strong>
+          </div>
+          <div class="rating-meter-item">
+            <span>Driver Courtesy & Safety</span>
+            <div class="meter-track"><div class="meter-fill" style="width:98%;"></div></div>
+            <strong style="text-align:right;">4.9</strong>
+          </div>
+          <div class="rating-meter-item">
+            <span>Onboard Starlink WiFi</span>
+            <div class="meter-track"><div class="meter-fill" style="width:95%;"></div></div>
+            <strong style="text-align:right;">4.8</strong>
+          </div>
+        </div>
+
+        <div>
+          <button class="btn-primary" onclick="window.openWriteReviewModal()">
+            ✍️ Write a Review
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Bar for Reviews -->
+      <div class="reviews-filter-bar" style="display:flex; gap:0.5rem; margin-bottom:2rem; overflow-x:auto;">
+        <button class="filter-btn active" onclick="window.filterReviews('All', this)">All Reviews</button>
+        <button class="filter-btn" onclick="window.filterReviews('Pacific', this)">Pacific Coast Hwy</button>
+        <button class="filter-btn" onclick="window.filterReviews('Grand Canyon', this)">Grand Canyon</button>
+        <button class="filter-btn" onclick="window.filterReviews('Yosemite', this)">Yosemite Explorer</button>
+      </div>
+
+      <!-- Reviews Masonry Feed -->
+      <div id="reviews-masonry-grid" class="reviews-masonry-grid">
+        <!-- Rendered by script.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 7. SECURE CLOUD STORAGE FOR BOOKINGS HISTORY                 -->
+  <!-- ============================================================ -->
+  <section id="my-bookings" class="section bookings-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">🔒 Encrypted Cloud Vault</span>
+        <h2 class="section-title">Your Stored Travel Bookings</h2>
+        <p class="section-desc">
+          Your travel history is securely preserved and synchronized. Access your digital QR boarding passes, track your coach in real-time, or communicate directly with your assigned chauffeur.
+        </p>
+      </div>
+
+      <!-- Cloud Status Banner -->
+      <div class="vault-status-banner">
+        <div class="vault-info-left">
+          <span class="vault-icon">🛡️</span>
+          <div>
+            <div>ApexWay Cloud Vault Synced (256-bit AES Encryption)</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:400;">
+              Offline caching enabled • Boarding pass works without cellular coverage
+            </div>
+          </div>
+        </div>
+        <div>
+          <span id="cloud-vault-count" class="live-indicator" style="font-size:0.8125rem;">
+            2 Bookings Synced
+          </span>
+        </div>
+      </div>
+
+      <!-- Bookings Cards Feed -->
+      <div id="bookings-list-container" class="bookings-list">
+        <!-- Populated via script.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 8. BUILT-IN RIDER-DRIVER MESSAGING SYSTEM                    -->
+  <!-- ============================================================ -->
+  <div id="driver-chat-widget" class="driver-chat-widget">
+    <!-- Floating Launcher Button -->
+    <button class="chat-launcher-btn" onclick="window.toggleDriverChat()" aria-label="Open Driver Chat">
+      <span>💬</span>
+      <span id="chat-unread-badge" class="badge-counter" style="display:flex;">1</span>
+    </button>
+
+    <!-- Expandable Chat Drawer -->
+    <div id="driver-chat-drawer" class="chat-drawer">
+      <div class="chat-drawer-header">
+        <div class="driver-profile-snippet">
+          <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&auto=format&fit=crop&q=80" alt="Captain Marcus" class="driver-avatar-circle" />
+          <div>
+            <div id="chat-driver-name" style="font-size:0.9375rem; font-weight:700; color:var(--text-main);">Capt. Marcus Vance</div>
+            <div id="chat-driver-route" class="driver-status-text">
+              <span>●</span> Active on Coach AW-101
+            </div>
+          </div>
+        </div>
+        <button onclick="window.toggleDriverChat()" style="color:var(--text-muted); font-size:1.25rem;">✕</button>
+      </div>
+
+      <!-- Chat Messages Stream -->
+      <div id="chat-messages-stream" class="chat-messages-container">
+        <!-- Messages rendered by script.js -->
+      </div>
+
+      <!-- Quick Reply Suggestions -->
+      <div class="quick-reply-suggestions">
+        <button class="quick-chip" onclick="window.sendQuickReply('Where is the exact pickup bay?')">Where is pickup bay?</button>
+        <button class="quick-chip" onclick="window.sendQuickReply('Is there space for extra luggage?')">Luggage room?</button>
+        <button class="quick-chip" onclick="window.sendQuickReply('Will there be a scenic photo stop?')">Photo stop timing?</button>
+        <button class="quick-chip" onclick="window.sendQuickReply('What is the Starlink WiFi network?')">WiFi info?</button>
+      </div>
+
+      <!-- Message Input Form -->
+      <form id="chat-input-form" class="chat-input-row">
+        <input type="text" id="chat-message-input" class="chat-input-box" placeholder="Ask your driver a question..." />
+        <button type="submit" class="btn-primary btn-sm">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 9. MODALS                                                    -->
+  <!-- ============================================================ -->
+
+  <!-- Modal A: Interactive Bus Seat Deck Selection -->
+  <div id="seat-modal" class="modal-backdrop">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="seat-modal-bus-name">Neoplan Skyliner Panoramic Vista</h3>
+          <p id="seat-modal-route">Select your preferred window or panoramic seats</p>
+        </div>
+        <button class="icon-btn" onclick="window.closeSeatSelection()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Deck Switcher -->
+        <div class="deck-switch">
+          <button id="deck-btn-upper" class="tab-pill active" data-deck="upper" onclick="window.switchSeatDeck('upper')">
+            🪟 Upper Panoramic Vista Deck (Glass Roof)
+          </button>
+          <button id="deck-btn-lower" class="tab-pill" data-deck="lower" onclick="window.switchSeatDeck('lower')">
+            🧳 Lower Deck (Quiet Zone & Restroom)
+          </button>
+        </div>
+
+        <!-- Bus Cabin Visual -->
+        <div class="bus-cabin-frame">
+          <div class="bus-front-windshield">
+            <span>▲ Front Panoramic Road View ▲</span>
+          </div>
+
+          <div id="seat-deck-grid" class="seat-deck-grid">
+            <!-- Rendered by script.js -->
+          </div>
+        </div>
+
+        <!-- Seat Legend -->
+        <div class="seat-legend">
+          <div class="legend-chip">
+            <span class="legend-box" style="background:var(--bg-card); border:1px solid var(--border-light);"></span>
+            <span>Available</span>
+          </div>
+          <div class="legend-chip">
+            <span class="legend-box" style="background:var(--primary);"></span>
+            <span>Selected</span>
+          </div>
+          <div class="legend-chip">
+            <span class="legend-box" style="background:var(--border-light);"></span>
+            <span>Occupied</span>
+          </div>
+          <div class="legend-chip">
+            <span class="legend-box" style="border:1px solid var(--accent-gold);"></span>
+            <span>Panoramic Front Row</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div>
+          <div style="font-size:0.8125rem; color:var(--text-muted);">
+            Seats: <strong id="selected-seats-list" style="color:var(--text-main);">None selected</strong>
+          </div>
+          <div style="font-size:1.5rem; font-weight:800; color:var(--text-main);" id="seat-modal-total-price">
+            $0
+          </div>
+        </div>
+
+        <button id="proceed-to-checkout-btn" class="btn-primary btn-lg" onclick="window.proceedToCheckout()" disabled style="opacity:0.5;">
+          <span>Continue to Mobile Payment</span>
+          <span>➔</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal B: Integrated Mobile Payment & Checkout -->
+  <div id="checkout-modal" class="modal-backdrop">
+    <div class="modal-container checkout-modal-container">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Fast Mobile Checkout</h3>
+          <p id="checkout-trip-title">Complete your reservation securely</p>
+        </div>
+        <button class="icon-btn" onclick="window.closeCheckoutModal()">✕</button>
+      </div>
+
+      <div class="modal-body checkout-grid">
+        <!-- Order Summary -->
+        <div class="order-summary-box">
+          <div class="summary-row">
+            <span>Selected Seat(s):</span>
+            <strong id="checkout-seats-text" style="color:var(--text-main);">2 Seats</strong>
+          </div>
+          <div class="summary-row">
+            <span>Base Ticket Fare:</span>
+            <span id="checkout-base-price">$178</span>
+          </div>
+
+          <!-- Addons -->
+          <div style="margin:1rem 0; padding:0.75rem 0; border-top:1px dashed var(--border-light); border-bottom:1px dashed var(--border-light);">
+            <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem;">
+              Tourist Enhancements
+            </div>
+            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer; margin-bottom:0.4rem;">
+              <input type="checkbox" id="addon-park-pass" onchange="window.recalculateOrderTotal()" />
+              <span>National Park Scenic Admission Pass (+${18})</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer; margin-bottom:0.4rem;">
+              <input type="checkbox" id="addon-picnic-box" onchange="window.recalculateOrderTotal()" />
+              <span>Artisan Gourmet Snack Box & Cider (+${14})</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
+              <input type="checkbox" id="addon-carbon" checked onchange="window.recalculateOrderTotal()" />
+              <span>100% Certified Carbon Neutral Offset (+${4})</span>
+            </label>
+          </div>
+
+          <!-- Promo Code Input -->
+          <div class="coupon-row">
+            <input type="text" id="coupon-code-input" class="input-control" placeholder="Promo code (e.g. APEX10, GOLDMEMBER25)" value="GOLDMEMBER25" />
+            <button type="button" class="btn-secondary" onclick="window.applyCouponCode()">Apply</button>
+          </div>
+
+          <div id="checkout-discount-row" class="summary-row" style="color:var(--success); margin-top:0.5rem; display:flex;">
+            <span>Loyalty Discount:</span>
+            <strong id="checkout-discount-val">-$25</strong>
+          </div>
+
+          <div class="summary-row total">
+            <span>Total Due:</span>
+            <span id="checkout-total-val">$157</span>
+          </div>
+        </div>
+
+        <!-- Payment Method Selector Tabs -->
+        <div>
+          <div class="payment-method-tabs">
+            <button id="pay-tab-apple" class="pay-tab active" onclick="window.switchPaymentTab('apple')">
+              <span style="font-size:1.25rem;">🍎</span>
+              <span>Apple Pay</span>
+            </button>
+            <button id="pay-tab-gpay" class="pay-tab" onclick="window.switchPaymentTab('gpay')">
+              <span style="font-size:1.25rem;">🌐</span>
+              <span>Google Pay</span>
+            </button>
+            <button id="pay-tab-qr" class="pay-tab" onclick="window.switchPaymentTab('qr')">
+              <span style="font-size:1.25rem;">📱</span>
+              <span>Mobile QR</span>
+            </button>
+            <button id="pay-tab-card" class="pay-tab" onclick="window.switchPaymentTab('card')">
+              <span style="font-size:1.25rem;">💳</span>
+              <span>Credit Card</span>
+            </button>
+          </div>
+
+          <!-- Panel 1: Apple Pay -->
+          <div id="pay-panel-apple" class="payment-panel active">
+            <button class="apple-pay-btn" onclick="window.processPayment('Apple Pay')">
+              <span>Pay with</span>
+              <span style="font-weight:900;">Pay</span>
+            </button>
+            <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:0.75rem;">
+              ⚡ Instant 1-tap biometric Face ID / Touch ID verification
+            </div>
+          </div>
+
+          <!-- Panel 2: Google Pay -->
+          <div id="pay-panel-gpay" class="payment-panel">
+            <button class="gpay-btn" onclick="window.processPayment('Google Pay')">
+              <span>Pay with</span>
+              <strong style="color:#4285F4;">G</strong><strong style="color:#EA4335;">P</strong><strong style="color:#FBBC05;">a</strong><strong style="color:#34A853;">y</strong>
+            </button>
+            <div style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:0.75rem;">
+              ⚡ Fast 1-click checkout with stored Google credentials
+            </div>
+          </div>
+
+          <!-- Panel 3: Mobile QR Code (UPI, M-Pesa, Mobile Wallet) -->
+          <div id="pay-panel-qr" class="payment-panel">
+            <div class="qr-payment-box">
+              <div class="qr-code-graphic">
+                <svg viewBox="0 0 100 100" fill="currentColor">
+                  <path d="M10 10h30v30H10zm6 6v18h18V16zm44-6h30v30H60zm6 6v18h18V16zM10 60h30v30H10zm6 6v18h18V66zm44 4h10v10H60zm20 0h10v10H80zm-10 10h10v10H70zm10 10h10v10H80zm-20 0h10v10H60z"/>
+                </svg>
+              </div>
+              <div>
+                <div style="font-weight:700;">Scan with Phone Camera or Wallet App</div>
+                <div style="font-size:0.8125rem; color:var(--text-muted);">Supports M-Pesa, UPI, Revolut, Cash App & Banking Apps</div>
+              </div>
+              <div id="qr-timer-text" class="qr-countdown">QR Code valid for: 1:59</div>
+              <button class="btn-primary" onclick="window.processPayment('Mobile QR')">
+                Simulate Mobile Scan & Approve
+              </button>
+            </div>
+          </div>
+
+          <!-- Panel 4: Credit / Debit Card -->
+          <div id="pay-panel-card" class="payment-panel">
+            <form onsubmit="event.preventDefault(); window.processPayment('Card');" class="card-form-grid">
+              <div class="input-group full-span">
+                <label class="input-label">Cardholder Name</label>
+                <input type="text" class="input-control" value="Alex Mercer" required />
+              </div>
+              <div class="input-group full-span">
+                <label class="input-label">Card Number</label>
+                <input type="text" class="input-control" value="4532 •••• •••• 8920" required />
+              </div>
+              <div class="input-group">
+                <label class="input-label">Expiry Date</label>
+                <input type="text" class="input-control" placeholder="MM/YY" value="09/28" required />
+              </div>
+              <div class="input-group">
+                <label class="input-label">CVV / CVC</label>
+                <input type="password" class="input-control" placeholder="123" value="894" maxlength="4" required />
+              </div>
+              <div class="full-span" style="margin-top:0.5rem;">
+                <button type="submit" class="btn-primary" style="width:100%;">
+                  Pay Securely with 256-Bit SSL
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal C: Digital Boarding Pass View -->
+  <div id="boarding-pass-modal" class="modal-backdrop">
+    <div class="modal-container" style="max-width:640px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Your Digital E-Ticket & Boarding Pass</h3>
+          <p>Present at vehicle door for contactless NFC/QR boarding</p>
+        </div>
+        <button class="icon-btn" onclick="window.closeBoardingPassModal()">✕</button>
+      </div>
+
+      <div class="modal-body" id="boarding-pass-content">
+        <!-- Rendered dynamically via script.js -->
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="window.printBoardingPass()">
+          🖨️ Print / Save PDF
+        </button>
+        <button class="btn-primary" onclick="window.closeBoardingPassModal()">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal D: Write a Review -->
+  <div id="review-form-modal" class="modal-backdrop">
+    <div class="modal-container" style="max-width:540px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3>Review Your Tourist Journey</h3>
+          <p>Earn +50 ApexMiles for your verified feedback</p>
+        </div>
+        <button class="icon-btn" onclick="window.closeWriteReviewModal()">✕</button>
+      </div>
+
+      <form onsubmit="window.submitRiderReview(event)" class="modal-body" style="display:flex; flex-direction:column; gap:1.25rem;">
+        <div class="input-group">
+          <label class="input-label">Your Overall Rating</label>
+          <div id="star-picker" class="star-rating-input">
+            <span class="active" onclick="window.setRatingStars(1)">★</span>
+            <span class="active" onclick="window.setRatingStars(2)">★</span>
+            <span class="active" onclick="window.setRatingStars(3)">★</span>
+            <span class="active" onclick="window.setRatingStars(4)">★</span>
+            <span class="active" onclick="window.setRatingStars(5)">★</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Your Name</label>
+          <input type="text" id="review-author-name" class="input-control" placeholder="e.g. Maya Chen" required />
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Route Traveled</label>
+          <select id="review-route-select" class="input-control">
+            <option value="Pacific Coast Hwy (SF → LA)">Pacific Coast Hwy (SF → LA)</option>
+            <option value="Grand Canyon Red Rocks">Grand Canyon Red Rocks</option>
+            <option value="High Sierra & Yosemite Explorer">High Sierra & Yosemite Explorer</option>
+            <option value="Rocky Mountain Alpine Sunset">Rocky Mountain Alpine Sunset</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Your Review & Scenic Highlights</label>
+          <textarea id="review-comment-text" class="input-control" rows="4" placeholder="How was the ride comfort, scenic viewpoints, WiFi speed, and chauffeur courtesy?" required></textarea>
+        </div>
+
+        <div class="modal-footer" style="padding:0; border:none;">
+          <button type="button" class="btn-secondary" onclick="window.closeWriteReviewModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Publish Verified Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ============================================================ -->
+  <!-- 10. SITE FOOTER                                              -->
+  <!-- ============================================================ -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <div class="logo-badge"><span>🚌</span></div>
+            <div class="brand-text">
+              <div class="brand-name">ApexWay<span>Express</span></div>
+              <div class="brand-sub">Scenic Tourist Coach</div>
+            </div>
+          </div>
+          <p>
+            The premium long-distance touring coach network designed for discerning travelers.
+            100% scenic corridors, live satellite GPS tracking, mobile checkout, and certified carbon neutral operations.
+          </p>
+          <div style="font-size:0.8125rem; color:var(--text-muted);">
+            📞 24/7 Traveler Care: <strong>+1 (800) 555-APEX</strong>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Scenic Corridors</h4>
+          <ul class="footer-links">
+            <li><a href="#trips">Pacific Coast Highway</a></li>
+            <li><a href="#trips">Grand Canyon South Rim</a></li>
+            <li><a href="#trips">Yosemite Valley High Country</a></li>
+            <li><a href="#trips">Rocky Mountain Sunset Sleeper</a></li>
+            <li><a href="#trips">Wine Country Vista Express</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Traveler Services</h4>
+          <ul class="footer-links">
+            <li><a href="#live-tracker">Live Satellite GPS Tracking</a></li>
+            <li><a href="#loyalty">ApexMiles Loyalty Club</a></li>
+            <li><a href="#my-bookings">Cloud Booking Vault</a></li>
+            <li><a href="#reviews">Verified Traveler Reviews</a></li>
+            <li><a href="javascript:window.toggleDriverChat()">Chauffeur Direct Messaging</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Security & Payments</h4>
+          <ul class="footer-links">
+            <li><span>🍎 Apple Pay Biometric</span></li>
+            <li><span>🌐 Google Pay 1-Click</span></li>
+            <li><span>📱 Mobile QR / UPI / M-Pesa</span></li>
+            <li><span>🔒 256-bit Cloud Encryption</span></li>
+            <li><span>🌿 100% Carbon Neutral Travel</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 ApexWay Express Travel Agency Inc. All rights reserved.
+        </div>
+        <div style="display:flex; gap:1.5rem;">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Carriage</a>
+          <a href="#">Accessibility Guarantee</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Leaflet Map JS CDN -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Main App Script -->
+  <script type="module" src="/script.js"></script>
+</body>
+</html>
